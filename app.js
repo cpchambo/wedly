@@ -1226,10 +1226,9 @@ function dash() {
         <h1>${c.daysLeft > 0 ? `${c.daysLeft} days to go` : 'Wedding day'}</h1>
         <p class="lead">${fmtDate(c.wedding)} · <b data-bind="guests">${state.guests}</b> guests · ${region().name} · <b data-bind="budget">${money(state.budget)}</b> budget</p>
       </div>
-      <div class="row-actions"><button class="ghost" data-share>Share dashboard</button><button class="ghost" data-export>Export to Excel</button><button class="primary" data-go="people">Add a helper</button></div>
+      <div class="row-actions">${cloudOn() && !cloud.owner() ? '<button class="ghost" data-sync title="Short share links, helpers\' answers come back, works on your phone too">Sync to the cloud</button>' : ''}<button class="ghost" data-share>Share</button><button class="ghost" data-export>Excel</button><button class="primary" data-go="people">Add a helper</button></div>
     </div>
-    ${cloudOn() ? (cloud.owner() ? `<div class="cloud-bar"><span class="cloud-status ok" data-bind="cloudStatus">${cloud.statusText()}</span><span class="muted small">Plan code <b>${state.cloudCode}</b>. Helpers' answers show up here automatically.</span><button class="link small" data-private-link>Copy my private link for another device</button></div>`
-      : `<div class="cloud-bar"><span class="muted small">Saved on this device only.</span><button class="ghost" data-sync>Sync to the cloud</button><span class="muted small">Short share links, helpers' answers come back, works on your phone too.</span></div>`) : ''}
+    ${cloudOn() && cloud.owner() ? `<div class="cloud-line"><span class="cloud-status ok" data-bind="cloudStatus">${cloud.statusText()}</span><span class="muted small">Plan <b>${state.cloudCode}</b>. Helpers' answers show up here automatically.</span><button class="link small" data-private-link>Private link for another device</button></div>` : ''}
     ${flash()}
     ${state.built ? '' : `<div class="note gold">Sample ${money(state.budget)} wedding, ${state.guests} guests. <button class="link" data-go="budget">Set your own numbers</button> or <button class="link" data-sample>fill it with sample picks</button>.</div>`}
     ${state.share && !state.shareWho ? `<input class="share-url" type="text" readonly value="${state.share}" aria-label="Share link" onfocus="this.select()">` : ''}

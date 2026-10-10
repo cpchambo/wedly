@@ -574,3 +574,5 @@ h2 { font-size: clamp(24px, 3vw, 32px); }
 .nav-links button { padding: 0 11px; }
 .hero { padding: 48px 0; }
 footer { padding: 20px 0; }
+
+.cloud-line { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 0 6px; }
