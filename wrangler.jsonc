@@ -1,0 +1,8 @@
+// Cloudflare Worker config. The repo is connected to Cloudflare, so every push to main
+// redeploys backend/pinterest-worker.js as the "wedly" worker.
+{
+  "name": "wedly",
+  "main": "backend/pinterest-worker.js",
+  "compatibility_date": "2026-01-01",
+  "workers_dev": true
+}
