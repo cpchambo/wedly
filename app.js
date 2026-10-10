@@ -106,6 +106,7 @@ const fresh = () => ({
   shareWho: null,    // which helper the current share link is for
   open: {},          // budget rows with the options panel open
   step: null,        // which phase walkthrough is open on the dashboard (0-3) or null
+  showCal: false,    // calendar expanded on the dashboard
   cloudCode: '',     // share code of this plan in the cloud, if synced
   editKey: '',       // private key that lets this device edit the cloud copy
   board: null,       // imported Pinterest board { url, title, looks }
@@ -122,7 +123,7 @@ const state = fresh();
 // ---------- Saving and sharing ----------
 
 const SAVE_KEY = 'wedding-budget-proto';
-const SAVED = ['page', 'built', 'budget', 'guests', 'region', 'picks', 'cat', 'chosen', 'date', 'done', 'custom', 'imported', 'view', 'listings', 'rentals', 'market', 'people', 'who', 'resold', 'step', 'board'];
+const SAVED = ['page', 'built', 'budget', 'guests', 'region', 'picks', 'cat', 'chosen', 'date', 'done', 'custom', 'imported', 'view', 'listings', 'rentals', 'market', 'people', 'who', 'resold', 'step', 'board', 'showCal'];
 const snapshot = () => { const o = {}; SAVED.forEach((k) => { o[k] = state[k]; }); return o; };
 function save() {
   try { localStorage.setItem(SAVE_KEY, JSON.stringify({ ...snapshot(), cloudCode: state.cloudCode, editKey: state.editKey })); } catch (e) { /* private window or storage off */ }
@@ -542,7 +543,7 @@ function nav() {
   <header class="nav"><div class="wrap">
     <button class="logo" data-go="home">${APP_NAME}</button>
     <nav class="nav-links" aria-label="Main">
-      ${state.who ? link('helper', 'My part') : `${link('home', 'Dashboard')}${link('vendors', 'Vendors')}${link('inspo', 'Inspiration')}${link('market', 'Marketplace')}${link('people', 'Helpers')}${link('picks', 'My picks')}${link('schedule', 'Schedule')}`}
+      ${state.who ? link('helper', 'My part') : `${link('home', 'Dashboard')}${link('vendors', 'Vendors')}${link('inspo', 'Inspiration')}${link('market', 'Marketplace')}${link('people', 'Helpers')}${link('schedule', 'Schedule')}`}
     </nav>
     <div class="nav-cta">${state.who ? '<button class="cta" data-fullview>Whole plan</button>' : state.built ? '' : '<button class="cta" data-go="budget">Set my budget</button>'}</div>
   </div></header>`;
@@ -1232,12 +1233,16 @@ function dash() {
     ${flash()}
     ${state.built ? '' : `<div class="note gold">Sample ${money(state.budget)} wedding, ${state.guests} guests. <button class="link" data-go="budget">Set your own numbers</button> or <button class="link" data-sample>fill it with sample picks</button>.</div>`}
     ${state.share && !state.shareWho ? `<input class="share-url" type="text" readonly value="${state.share}" aria-label="Share link" onfocus="this.select()">` : ''}
+    <div class="jump" aria-label="Jump to">
+      <a href="#d-steps">Steps</a><a href="#d-money">Money</a><a href="#d-pays">Who pays</a><a href="#d-next">Up next</a><a href="#d-cats">Categories</a><a href="#d-picks">Picks</a><a href="#d-month">This month</a>
+    </div>
+    <div id="d-steps"></div>
     ${steps(p.tasks)}
     ${walkthrough(p.tasks, alloc)}
 
     <div class="dash dash-3">
-      <div class="card stack">
-        <div class="row"><span>Money</span><span class="muted small">${real ? 'real total so far' : 'your budget'}</span></div>
+      <div class="card stack" id="d-money">
+        <div class="row"><span>Money</span><button class="link small" data-go="picks">My picks</button></div>
         <div class="big ${over ? 'bad' : ''}" data-bind="real">${money(real || state.budget)}</div>
         <div class="bar"><i class="${over ? 'over' : ''}" data-bind="realBar" style="width:${pct}%"></i></div>
         <div class="lines">
@@ -1251,7 +1256,7 @@ function dash() {
         <div id="pie">${pie(alloc)}</div>
         <div class="muted small">Click a slice to make it a priority.</div>
       </div>
-      <div class="card stack">
+      <div class="card stack" id="d-pays">
         <div class="row"><span>Who pays</span><button class="link small" data-go="people">Edit helpers</button></div>
         ${cov.rows.length ? cov.rows.map((r) => `
           <div class="payer"><div class="row small"><span><span class="avatar">${initials(r.p.name)}</span>${r.p.name}<span class="muted"> · ${r.p.role}</span></span><span>${money(r.pays)}${r.cap ? `<span class="muted"> / ${money(r.cap)}</span>` : ''}</span></div>
@@ -1261,7 +1266,7 @@ function dash() {
         <div class="stat"><span>Guests</span><span class="stepper"><button data-guests-delta="-10" aria-label="10 fewer guests">−</button><b data-bind="guests">${state.guests}</b><button data-guests-delta="10" aria-label="10 more guests">+</button></span></div>
         <div class="muted small" data-bind="guestNote">${guestNote()}</div>
       </div>
-      <div class="card stack">
+      <div class="card stack" id="d-next">
         <div class="row"><span>Up next</span><button class="link small" data-go="schedule">Full calendar</button></div>
         ${countdownCard(c)}
         ${nextTasks.length ? nextTasks.map((t) => { const o = ownerOf(t.id); return `<div class="task"><button class="check" data-task="${t.id}" aria-label="Mark done: ${t.text}" ${t.auto ? 'disabled' : ''}></button><span class="text">${t.text}<span class="muted small"> · by ${fmtDate(t.due)}${o ? ` · ${o.name}` : ''}</span></span>${t.late ? '<span class="badge over">Late</span>' : ''}</div>`; }).join('') : '<div class="note good">Everything is done.</div>'}
@@ -1269,13 +1274,13 @@ function dash() {
       </div>
     </div>
 
-    <div class="stack">
+    <div class="stack" id="d-cats">
       <div class="row"><h2>Budget by category</h2><span class="muted small">Drag a slider, open the options under it.</span></div>
       <div class="dash-cats">${catRows(alloc)}</div>
       ${linesCard(alloc)}
     </div>
 
-    <div class="dash dash-3">
+    <div class="dash dash-3" id="d-picks">
       <div class="card stack">
         <div class="row"><span>Picks</span><button class="link small" data-go="picks">Details</button></div>
         <div class="muted small">${have.length} of ${CATS.length} categories chosen</div>
@@ -1298,9 +1303,9 @@ function dash() {
       </div>
     </div>
 
-    <div class="stack">
-      <div class="row"><h2>This month</h2><button class="link small" data-go="schedule">Full schedule</button></div>
-      ${calendar(p)}
+    <div class="stack" id="d-month">
+      <div class="row"><h2>This month</h2><span class="row-actions"><button class="link small" data-toggle-cal>${state.showCal ? 'Hide calendar' : 'Show calendar'}</button><button class="link small" data-go="schedule">Full schedule</button></span></div>
+      ${state.showCal ? calendar(p) : `<div class="muted small">${(() => { const n = p.tasks.filter((t) => t.due.getMonth() === p.today.getMonth() && t.due.getFullYear() === p.today.getFullYear()); const left = n.filter((t) => !t.done).length; return n.length ? `${n.length} task${n.length === 1 ? '' : 's'} due this month, ${left} left.` : 'Nothing due this month.'; })()}</div>`}
     </div>
   </div></section>`;
 }
@@ -1857,6 +1862,7 @@ app.addEventListener('click', (e) => {
     copy.catch(() => { state.flash = 'Copy the private link below. Anyone with it can edit.'; render(); });
   }
   if (d.clearBoard !== undefined) { state.board = null; }
+  if (d.toggleCal !== undefined) { state.showCal = !state.showCal; }
   if (d.expand) { state.open[d.expand] = !state.open[d.expand]; }
   if (d.expandOnly) { state.open[d.expandOnly] = true; }
   if (d.showOver) { state.showOver[d.showOver] = !state.showOver[d.showOver]; }

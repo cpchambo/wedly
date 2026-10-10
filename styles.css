@@ -576,3 +576,19 @@ h2 { font-size: clamp(24px, 3vw, 32px); }
 footer { padding: 20px 0; }
 
 .cloud-line { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 0 6px; }
+
+/* Easier navigation */
+.jump { position: sticky; top: 68px; z-index: 4; display: flex; gap: 4px; overflow-x: auto; padding: 6px 4px; margin: -6px -4px 0; background: var(--ground); scrollbar-width: none; }
+.jump::-webkit-scrollbar { display: none; }
+.jump a { flex: none; padding: 6px 12px; border-radius: 16px; font-size: 13px; font-weight: 600; color: var(--muted); text-decoration: none; border: 1px solid transparent; }
+.jump a:hover { color: var(--accent-dark); background: #fff; border-color: var(--line); }
+[id^="d-"] { scroll-margin-top: 120px; }
+@media (max-width: 760px) {
+  .nav .wrap { flex-wrap: nowrap; gap: 10px; }
+  .nav-links { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; flex: 1 1 auto; }
+  .nav-links::-webkit-scrollbar { display: none; }
+  .nav-links button { flex: none; }
+  .nav-cta { width: auto; margin-left: 0; padding-left: 0; border: 0; }
+  .nav-cta .cta { width: auto; padding: 0 14px; min-height: 40px; font-size: 14px; }
+  .jump { top: 60px; }
+}
