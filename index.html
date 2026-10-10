@@ -5,14 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta http-equiv="Cache-Control" content="no-store">
   <title>Wedly</title>
+  <script>
+    // Load our own files with a fresh stamp so a browser never shows an old copy after a push.
+    (function () { var t = "?t=" + Math.floor(Date.now() / 60000); document.write('<link rel="stylesheet" href="styles.css' + t + '">'); })();
+  </script>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=DM+Sans:wght@400;500;600;700&display=swap">
-  <link rel="stylesheet" href="styles.css?v=5">
 </head>
 <body>
   <div id="app"></div>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.1/dist/umd/supabase.min.js"></script>
-  <script src="config.js?v=5"></script>
   <script src="xlsx.full.min.js"></script>
-  <script src="app.js?v=5"></script>
+  <script>
+    (function () { var t = "?t=" + Math.floor(Date.now() / 60000); document.write('<script src="config.js' + t + '"><\/script><script src="app.js' + t + '"><\/script>'); })();
+  </script>
 </body>
 </html>

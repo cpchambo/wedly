@@ -111,6 +111,7 @@ const fresh = () => ({
   board: null,       // imported Pinterest board { url, title, looks }
   importing: false,
   importError: '',
+  importUrl: '',
   resold: false,     // the couple listed their wedding gear for rent
   showOver: {},      // budget rows showing over-budget options too
   rentals: {},       // { listingId: true } booked from the marketplace
@@ -271,9 +272,15 @@ function pinToLook(pin, i) {
   return { img: pin.img, url: pin.link, title: pin.title || 'Pinned look', tone: TONES[i % TONES.length], parts: cats.map((c) => ({ cat: c, pro: PIN_COST[c].pro, diy: PIN_COST[c].diy, hours: PIN_COST[c].hours })) };
 }
 async function importBoard(url) {
-  const r = await fetch(`${CFG.PINTEREST_PROXY.replace(/\/$/, '')}?board=${encodeURIComponent(url)}`);
-  const j = await r.json();
-  if (!r.ok || j.error) throw new Error(j.error || 'Import failed');
+  const ctl = new AbortController();
+  const timer = setTimeout(() => ctl.abort(), 30000);
+  let r;
+  try { r = await fetch(`${CFG.PINTEREST_PROXY.replace(/\/$/, '')}?board=${encodeURIComponent(url)}`, { signal: ctl.signal }); }
+  catch (e) { throw new Error(e.name === 'AbortError' ? 'Pinterest took too long to answer. Try again in a minute.' : 'Failed to fetch'); }
+  finally { clearTimeout(timer); }
+  let j;
+  try { j = await r.json(); } catch (e) { throw new Error(`The importer answered with something unexpected (status ${r.status}).`); }
+  if (!r.ok || j.error) throw new Error(j.error || `Import failed (status ${r.status})`);
   if (!j.pins.length) throw new Error('No pins found on that board');
   return { url, title: j.title || 'Your board', looks: j.pins.slice(0, 24).map(pinToLook) };
 }
@@ -812,9 +819,10 @@ function inspo() {
     <form class="card stack" data-board-form>
       <h3>${state.board ? 'Import a different board' : 'Import your Pinterest board'}</h3>
       <p class="muted small">Paste a link to one of your boards, or to your profile for your recent pins. Each pin gets priced from the words in its title. Secret boards cannot be read.</p>
-      <div class="row-actions"><input class="search" name="url" type="text" inputmode="url" autocomplete="off" required placeholder="pinterest.com/username/board-name" value="${state.board ? state.board.url : ''}" style="flex:1 1 320px"><button class="primary" type="submit" ${state.importing ? 'disabled' : ''}>${state.importing ? 'Importing…' : 'Import'}</button></div>
-      ${state.importing ? '<div class="note">Reading your board… this takes a few seconds.</div>' : ''}
-      ${state.importError ? `<div class="note warn">${state.importError}</div>` : ''}
+      <div class="row-actions"><input class="search" name="url" type="text" inputmode="url" autocomplete="off" required placeholder="pinterest.com/username/board-name" value="${state.importUrl || (state.board ? state.board.url : '')}" style="flex:1 1 320px"><button class="primary" type="submit" ${state.importing ? 'disabled' : ''}>${state.importing ? 'Importing…' : 'Import'}</button></div>
+      ${state.importing ? '<div class="note" id="import-status">Reading your board. This takes 5 to 15 seconds.</div>' : ''}
+      ${state.importError ? `<div class="note bad" id="import-status"><b>Could not import.</b> ${state.importError}</div>` : ''}
+      ${!state.importing && !state.importError && state.board && state.board.url ? `<div class="note good" id="import-status">Imported ${state.board.looks.length} pins from ${state.board.title}. They are priced below.</div>` : ''}
       <details class="small"><summary>How to copy a board link</summary><div class="muted small" style="padding-top:8px">On the phone app: open the board, tap the three dots or share arrow, tap <b>Copy link</b>. On a computer: open the board and copy the address bar. A link to your profile page works too and imports your 25 most recent pins. Single pin links do not work; open the board the pin is saved to.</div></details>
     </form>
     <form class="card stack" data-manual-form>
@@ -1983,10 +1991,12 @@ app.addEventListener('submit', (e) => {
   if (bf) {
     e.preventDefault();
     const url = String(new FormData(bf).get('url') || '').trim();
-    if (!url) return;
-    state.importing = true; state.importError = ''; render();
-    importBoard(url).then((board) => { state.board = board; state.imported = true; state.importing = false; state.flash = `${board.looks.length} pins imported from ${board.title}.`; render(); const g = app.querySelector('.grid3'); if (g) g.scrollIntoView({ block: 'start', behavior: 'smooth' }); })
-      .catch((err) => { state.importing = false; state.importError = err.message; render(); });
+    if (!url) { state.importError = 'Paste a link first.'; render(); return; }
+    state.importUrl = url; state.importing = true; state.importError = ''; render();
+    const focus = () => { const el = document.getElementById('import-status'); if (el) el.scrollIntoView({ block: 'center', behavior: 'smooth' }); };
+    focus();
+    importBoard(url).then((board) => { state.board = board; state.imported = true; state.importing = false; state.flash = `${board.looks.length} pins imported from ${board.title}.`; render(); focus(); })
+      .catch((err) => { state.importing = false; state.importError = err.message === 'Failed to fetch' ? 'Could not reach the importer. Check your connection and try again.' : err.message; render(); focus(); });
     return;
   }
   const pf = e.target.closest('[data-person-form]');

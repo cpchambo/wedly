@@ -545,3 +545,5 @@ h3 { font-weight: 600; font-size: 24px; }
 footer { background: transparent; border-top: 1px solid var(--line); }
 .note.gold, .note.warn { background: #fff4ee; color: #7a3b2a; border-color: #f3d9cc; }
 .dash-page > .wrap > .note.gold { background: #fff; border: 1px dashed var(--line-strong); color: var(--muted); }
+
+.note.bad { background: #fbe0e1; color: #8a1c1c; border: 1px solid #f3c2c4; font-weight: 500; }
