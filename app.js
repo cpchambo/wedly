@@ -799,7 +799,7 @@ function inspo() {
     }).join('');
     return `
     <div class="card listing">
-      ${photo(l.img, l.tone)}
+      ${l.img ? photo(l.img, l.tone) : `<span class="photo tone" style="background:${l.tone}"><span>${l.title.charAt(0).toUpperCase()}</span></span>`}
       <div class="body">
         <div class="stack"><h3>${l.title}</h3>
         <div><span class="badge ${overs.length ? 'over' : 'fit'}">${overs.length ? overs.join(', ') : 'Fits your budget'}</span></div>
@@ -811,9 +811,17 @@ function inspo() {
   const importer = pinsOn() ? `
     <form class="card stack" data-board-form>
       <h3>${state.board ? 'Import a different board' : 'Import your Pinterest board'}</h3>
-      <p class="muted small">Paste the link to any public board. Each pin gets priced from the words in its title. Secret boards cannot be read.</p>
-      <div class="row-actions"><input class="search" name="url" type="url" required placeholder="https://www.pinterest.com/username/board-name/" value="${state.board ? state.board.url : ''}" style="flex:1 1 320px"><button class="primary" type="submit" ${state.importing ? 'disabled' : ''}>${state.importing ? 'Importing…' : 'Import board'}</button></div>
+      <p class="muted small">Paste a link to one of your boards, or to your profile for your recent pins. Each pin gets priced from the words in its title. Secret boards cannot be read.</p>
+      <div class="row-actions"><input class="search" name="url" type="text" inputmode="url" autocomplete="off" required placeholder="pinterest.com/username/board-name" value="${state.board ? state.board.url : ''}" style="flex:1 1 320px"><button class="primary" type="submit" ${state.importing ? 'disabled' : ''}>${state.importing ? 'Importing…' : 'Import'}</button></div>
+      ${state.importing ? '<div class="note">Reading your board… this takes a few seconds.</div>' : ''}
       ${state.importError ? `<div class="note warn">${state.importError}</div>` : ''}
+      <details class="small"><summary>How to copy a board link</summary><div class="muted small" style="padding-top:8px">On the phone app: open the board, tap the three dots or share arrow, tap <b>Copy link</b>. On a computer: open the board and copy the address bar. A link to your profile page works too and imports your 25 most recent pins. Single pin links do not work; open the board the pin is saved to.</div></details>
+    </form>
+    <form class="card stack" data-manual-form>
+      <h3>No Pinterest? Describe your looks</h3>
+      <p class="muted small">One per line, in plain words. We price each one the same way.</p>
+      <textarea class="search" name="lines" rows="4" placeholder="boho floral arch with pampas\nlong farmhouse table dinner with candles\nvintage lace dress"></textarea>
+      <button class="ghost" type="submit">Price these looks</button>
     </form>` : `<div class="note">Real Pinterest import turns on once <code>PINTEREST_PROXY</code> is set in config.js (see backend/README.md). Until then this uses a sample board.</div>`;
   const shown = state.board && state.board.looks.length ? `<div class="note good">${state.board.title}: ${LK.length} pins priced for ${state.guests} guests in a ${region().short}. <button class="link" data-clear-board>Remove board</button></div><div class="grid3">${looks}</div>`
     : state.imported ? `<div class="note good">Sample board: ${LOOKS.length} looks priced for ${state.guests} guests in a ${region().short}</div><div class="grid3">${looks}</div>`
@@ -1280,7 +1288,7 @@ function dash() {
       <div class="card stack">
         <div class="row"><span>Inspiration</span><button class="link small" data-go="inspo">Board</button></div>
         ${styleStrip()}
-        ${state.imported || state.board ? `<div class="lines">${currentLooks().slice(0, 4).map((l) => { const m = region().m; const pro = l.parts.reduce((t, pt) => t + round((pt.pro[0] + pt.pro[1] * state.guests) * m, 25), 0); const diy = l.parts.reduce((t, pt) => t + round((pt.diy[0] + pt.diy[1] * state.guests) * m, 25), 0); return `<div class="line"><span>${l.title}<span class="muted small"> · DIY ${money(diy)}</span></span><b>${money(pro)}</b></div>`; }).join('')}</div>` : '<p class="muted small">No board connected. Import a Pinterest board and every look gets a price.</p><button class="ghost" data-import>Import a Pinterest board</button>'}
+        ${state.imported || state.board ? `<div class="lines">${currentLooks().slice(0, 4).map((l) => { const m = region().m; const pro = l.parts.reduce((t, pt) => t + round((pt.pro[0] + pt.pro[1] * state.guests) * m, 25), 0); const diy = l.parts.reduce((t, pt) => t + round((pt.diy[0] + pt.diy[1] * state.guests) * m, 25), 0); return `<div class="line"><span>${l.title}<span class="muted small"> · DIY ${money(diy)}</span></span><b>${money(pro)}</b></div>`; }).join('')}</div>` : `<p class="muted small">No board connected. Import a Pinterest board and every look gets a price.</p><button class="ghost" ${pinsOn() ? 'data-go="inspo"' : 'data-import'}>Import a Pinterest board</button>`}
       </div>
     </div>
 
@@ -1960,13 +1968,24 @@ app.addEventListener('input', (e) => {
 });
 
 app.addEventListener('submit', (e) => {
+  const mf = e.target.closest('[data-manual-form]');
+  if (mf) {
+    e.preventDefault();
+    const lines = String(new FormData(mf).get('lines') || '').split('\n').map((l) => l.trim()).filter(Boolean);
+    if (!lines.length) return;
+    state.board = { url: '', title: 'Your looks', looks: lines.slice(0, 24).map((t, i) => pinToLook({ title: t, img: '', link: '' }, i)) };
+    state.imported = true; state.importError = '';
+    state.flash = `${lines.length} look${lines.length === 1 ? '' : 's'} priced.`;
+    render();
+    return;
+  }
   const bf = e.target.closest('[data-board-form]');
   if (bf) {
     e.preventDefault();
     const url = String(new FormData(bf).get('url') || '').trim();
     if (!url) return;
     state.importing = true; state.importError = ''; render();
-    importBoard(url).then((board) => { state.board = board; state.imported = true; state.importing = false; state.flash = `${board.looks.length} pins imported from ${board.title}.`; render(); })
+    importBoard(url).then((board) => { state.board = board; state.imported = true; state.importing = false; state.flash = `${board.looks.length} pins imported from ${board.title}.`; render(); const g = app.querySelector('.grid3'); if (g) g.scrollIntoView({ block: 'start', behavior: 'smooth' }); })
       .catch((err) => { state.importing = false; state.importError = err.message; render(); });
     return;
   }
