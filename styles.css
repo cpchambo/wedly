@@ -547,3 +547,30 @@ footer { background: transparent; border-top: 1px solid var(--line); }
 .dash-page > .wrap > .note.gold { background: #fff; border: 1px dashed var(--line-strong); color: var(--muted); }
 
 .note.bad { background: #fbe0e1; color: #8a1c1c; border: 1px solid #f3c2c4; font-weight: 500; }
+
+/* Condensed layout */
+.section { padding: 36px 0; }
+.dash-page { padding-top: 18px; }
+.stack.wide { gap: 20px; }
+.card { padding: 18px; }
+.dash { gap: 16px; }
+.dash-cats { gap: 12px; }
+.dash-top { padding: 26px 28px 22px; }
+.dash-top h1 { font-size: clamp(34px, 4.6vw, 52px); }
+h1 { font-size: clamp(34px, 4.6vw, 54px); }
+h2 { font-size: clamp(24px, 3vw, 32px); }
+.big { font-size: 42px; }
+.lead { font-size: 17px; }
+.stat { padding: 8px 0; }
+.line { padding: 5px 0; font-size: 14px; }
+.steps { gap: 10px; }
+.step { padding: 10px 14px; }
+.steps-hint { margin-top: -10px; }
+.dash-page .row h2 { font-size: 22px; }
+.cal-cell { min-height: 70px; }
+.cat { gap: 6px; padding: 14px 16px; }
+.count-row > div { padding: 8px 4px; }
+.count-row b { font-size: 22px; }
+.nav-links button { padding: 0 11px; }
+.hero { padding: 48px 0; }
+footer { padding: 20px 0; }

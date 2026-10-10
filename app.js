@@ -542,14 +542,14 @@ function nav() {
   <header class="nav"><div class="wrap">
     <button class="logo" data-go="home">${APP_NAME}</button>
     <nav class="nav-links" aria-label="Main">
-      ${state.who ? link('helper', 'My part') : `${link('home', 'Dashboard')}${link('budget', 'Budget')}${link('vendors', 'Vendors')}${link('inspo', 'Inspiration')}${link('market', 'Marketplace')}${link('people', 'Helpers')}${link('picks', 'Picks')}${link('schedule', 'Schedule')}${link('all', 'Everything')}`}
+      ${state.who ? link('helper', 'My part') : `${link('home', 'Dashboard')}${link('vendors', 'Vendors')}${link('inspo', 'Inspiration')}${link('market', 'Marketplace')}${link('people', 'Helpers')}${link('picks', 'My picks')}${link('schedule', 'Schedule')}`}
     </nav>
     <div class="nav-cta">${state.who ? '<button class="cta" data-fullview>Whole plan</button>' : state.built ? '' : '<button class="cta" data-go="budget">Set my budget</button>'}</div>
   </div></header>`;
 }
 
 function footer() {
-  return `<footer><div class="wrap footer-row"><span class="muted small">Class prototype. Prices are sample numbers for a ${region().short}, saved in this browser.</span><span><button class="link small" data-go="about">About and pricing</button> · <button class="link small" data-startover>Start over</button></span></div></footer>`;
+  return `<footer><div class="wrap footer-row"><span class="muted small">Class prototype. Prices are sample numbers for a ${region().short}, saved in this browser.</span><span><button class="link small" data-go="all">Everything on one page</button> · <button class="link small" data-go="about">About and pricing</button> · <button class="link small" data-startover>Start over</button></span></div></footer>`;
 }
 
 function flash() {
@@ -610,7 +610,7 @@ function linesCard(alloc) {
   <div class="card dashed stack">
     <div class="row"><span><i class="dot" style="background:${COLORS.other}"></i>Smaller lines</span><b data-amt="other">${money(alloc.other)}</b></div>
     <div class="lines">${rows}</div>
-    <div class="muted small" data-bind="trimmed">${alloc.trimmed ? `These usually cost more than this at ${state.guests} guests. We trimmed them to ${Math.round(LINES_CAP * 100)}% of your budget so the big categories have room.` : `Estimated for ${state.guests} guests in a ${region().short}. Nothing hides in "everything else".`}</div>
+    <div class="muted small" data-bind="trimmed">${alloc.trimmed ? `Trimmed to ${Math.round(LINES_CAP * 100)}% of your budget so the big categories have room.` : `Estimates for ${state.guests} guests.`}</div>
   </div>`;
 }
 
@@ -770,7 +770,7 @@ function vendors() {
   }).join('');
   return `
   <section class="section"><div class="wrap stack wide">
-    <div class="stack"><div class="eyebrow">Vendors</div><h1>Options in your range</h1><p class="lead">Prices shown up front for ${state.guests} guests in a ${region().short}, sorted from DIY to full service.</p></div>
+    <div class="stack"><div class="eyebrow">Vendors</div><h1>Options in your range</h1><p class="lead">Prices up front for ${state.guests} guests, DIY to full service.</p></div>
     <div class="two-col">
       <div class="side side-list">${side}</div>
       <div class="main">
@@ -837,7 +837,7 @@ function inspo() {
     : `<div class="empty"><h3>No board connected yet</h3><button class="primary" data-import>Try the sample board</button></div>`;
   return `
   <section class="section"><div class="wrap stack wide">
-    <div class="stack"><div class="eyebrow">Inspiration</div><h1>Price your inspiration</h1><p class="lead">Bring in a Pinterest board and see what each look costs against your budget, split across the categories it touches.</p></div>
+    <div class="stack"><div class="eyebrow">Inspiration</div><h1>Price your inspiration</h1><p class="lead">Import a Pinterest board. Every look gets a price and vendors who match it.</p></div>
     ${flash()}
     ${importer}
     ${styleStrip()}
@@ -1001,7 +1001,7 @@ function market() {
   const booked = allListings().filter((l) => state.rentals[l.id]);
   return `
   <section class="section"><div class="wrap stack wide">
-    <div class="stack"><div class="eyebrow">Marketplace</div><h1>Buy it, sell it, or rent it from a couple nearby</h1><p class="lead">Arches, tables, lights, dresses and helpers, listed by couples who just got married and small businesses near you. Buy it secondhand, rent it for the day, and sell it all back when you are done.</p></div>
+    <div class="stack"><div class="eyebrow">Marketplace</div><h1>Buy it, sell it, or rent it from a couple nearby</h1><p class="lead">Decor, dresses and helpers from couples who just got married. Buy it, rent it, sell it back after.</p></div>
     ${flash()}
     <div class="toggle" role="tablist"><button class="${tab === 'browse' ? 'on' : ''}" data-mtab="browse">Find something</button><button class="${tab === 'list' ? 'on' : ''}" data-mtab="list">List something</button></div>
     ${tab === 'list' ? listForm() : `
@@ -1127,7 +1127,7 @@ function people() {
   const unclaimed = COVERABLE().filter((c) => !state.people.some((p) => (p.covers || []).includes(c.id)));
   return `
   <section class="section"><div class="wrap stack wide">
-    <div class="stack"><div class="eyebrow">Helpers</div><h1>Who is paying for what, and who is doing what</h1><p class="lead">Clear agreements up front. Mom covers catering up to $4,000 and not a dollar more. Dad handles the music. Everyone gets their own link.</p></div>
+    <div class="stack"><div class="eyebrow">Helpers</div><h1>Who is paying for what, and who is doing what</h1><p class="lead">Mom covers catering up to $4,000 and not a dollar more. Everyone gets their own link.</p></div>
     ${flash()}
     <div class="two-col">
       <div class="main">
@@ -1231,7 +1231,7 @@ function dash() {
     ${cloudOn() ? (cloud.owner() ? `<div class="cloud-bar"><span class="cloud-status ok" data-bind="cloudStatus">${cloud.statusText()}</span><span class="muted small">Plan code <b>${state.cloudCode}</b>. Helpers' answers show up here automatically.</span><button class="link small" data-private-link>Copy my private link for another device</button></div>`
       : `<div class="cloud-bar"><span class="muted small">Saved on this device only.</span><button class="ghost" data-sync>Sync to the cloud</button><span class="muted small">Short share links, helpers' answers come back, works on your phone too.</span></div>`) : ''}
     ${flash()}
-    ${state.built ? '' : `<div class="note gold">This is a sample ${money(state.budget)} wedding for ${state.guests} guests so you can see how it works. <button class="link" data-go="budget">Set your own budget, guests and priorities</button> or <button class="link" data-sample>fill it with sample picks</button>.</div>`}
+    ${state.built ? '' : `<div class="note gold">Sample ${money(state.budget)} wedding, ${state.guests} guests. <button class="link" data-go="budget">Set your own numbers</button> or <button class="link" data-sample>fill it with sample picks</button>.</div>`}
     ${state.share && !state.shareWho ? `<input class="share-url" type="text" readonly value="${state.share}" aria-label="Share link" onfocus="this.select()">` : ''}
     ${steps(p.tasks)}
     ${walkthrough(p.tasks, alloc)}
@@ -1250,16 +1250,15 @@ function dash() {
           ${dep.held ? `<div class="line"><span>Deposits held safely</span><b>${money(dep.held)}</b></div>` : ''}
         </div>
         <div id="pie">${pie(alloc)}</div>
-        <div class="muted small">Click a slice to make it a priority. Drag a slider below to move money.</div>
+        <div class="muted small">Click a slice to make it a priority.</div>
       </div>
       <div class="card stack">
         <div class="row"><span>Who pays</span><button class="link small" data-go="people">Edit helpers</button></div>
         ${cov.rows.length ? cov.rows.map((r) => `
           <div class="payer"><div class="row small"><span><span class="avatar">${initials(r.p.name)}</span>${r.p.name}<span class="muted"> · ${r.p.role}</span></span><span>${money(r.pays)}${r.cap ? `<span class="muted"> / ${money(r.cap)}</span>` : ''}</span></div>
           ${r.cap ? `<div class="bar"><i class="${r.over ? 'over' : ''}" style="width:${Math.min(100, Math.round((r.committed / r.cap) * 100))}%"></i></div>` : ''}
-          <div class="muted small">${r.items.map((i) => i.name).join(', ') || 'nothing yet'}${r.over ? ` · ${money(r.over)} over cap, on you` : ''} · ${r.p.accepted ? 'agreed' : 'not confirmed'}${r.tasks.length ? ` · ${r.tasks.length} task${r.tasks.length > 1 ? 's' : ''}` : ''}</div></div>`).join('') : '<p class="muted small">Nobody is helping yet. Add a parent, say what they cover and cap it, and send them their link.</p>'}
+          <div class="muted small">${r.items.map((i) => i.name).join(', ') || 'nothing yet'}${r.over ? ` · ${money(r.over)} over cap, on you` : ''} · ${r.p.accepted ? 'agreed' : 'not confirmed'}${r.tasks.length ? ` · ${r.tasks.length} task${r.tasks.length > 1 ? 's' : ''}` : ''}</div></div>`).join('') : '<p class="muted small">Nobody is helping yet. Add a parent, cap what they cover, send them a link.</p>'}
         <div class="stat"><span>You two</span><b>${money(cov.couple)}</b></div>
-        <div class="muted small">Helpers cover ${cov.real ? Math.round((cov.helpers / cov.real) * 100) : 0}% of the real total.</div>
         <div class="stat"><span>Guests</span><span class="stepper"><button data-guests-delta="-10" aria-label="10 fewer guests">−</button><b data-bind="guests">${state.guests}</b><button data-guests-delta="10" aria-label="10 more guests">+</button></span></div>
         <div class="muted small" data-bind="guestNote">${guestNote()}</div>
       </div>
@@ -1272,7 +1271,7 @@ function dash() {
     </div>
 
     <div class="stack">
-      <div class="row"><h2>Budget by category</h2><span class="muted small">Drag a slider. The options under it filter as you go.</span></div>
+      <div class="row"><h2>Budget by category</h2><span class="muted small">Drag a slider, open the options under it.</span></div>
       <div class="dash-cats">${catRows(alloc)}</div>
       ${linesCard(alloc)}
     </div>
@@ -1288,21 +1287,20 @@ function dash() {
       </div>
       <div class="card stack">
         <div class="row"><span>Marketplace</span><button class="link small" data-go="market">Browse</button></div>
-        ${booked.length ? `<div class="lines">${booked.map((l) => `<div class="line"><span>${l.title}</span><span><b>${money(renterPays(l))}</b> <button class="link small" data-rent="${l.id}">Remove</button></span></div>`).join('')}</div>` : '<p class="muted small">Nothing booked. Rent the arch instead of buying it.</p>'}
+        ${booked.length ? `<div class="lines">${booked.map((l) => `<div class="line"><span>${l.title}</span><span><b>${money(renterPays(l))}</b> <button class="link small" data-rent="${l.id}">Remove</button></span></div>`).join('')}</div>` : '<p class="muted small">Nothing yet. Buy or rent decor from other couples.</p>'}
         <div class="stat"><span>Booked</span><b>${money(rentals)}</b></div>
         ${state.listings.length ? `<div class="muted small">You have ${state.listings.length} listing${state.listings.length > 1 ? 's' : ''} earning after the wedding.</div>` : ''}
-        <div class="row small" style="margin-top:6px"><span>After the wedding</span></div>
-        ${state.resold ? `<p class="muted small">Your wedding gear is listed. Each booking pays you ${Math.round((1 - OWNER_CUT) * 100)}% of the price.</p>` : `<p class="muted small">${resaleItems().length} item${resaleItems().length === 1 ? '' : 's'} you will own. Sell the small stuff, rent out the big stuff: about ${money(resaleItems().reduce((t, r) => t + r.price * (1 - OWNER_CUT) * (r.unit === 'day' ? 8 : 1), 0))} back.</p><button class="ghost" data-resale>List what I bought</button>`}
+        ${state.resold ? `<p class="muted small">Your wedding gear is listed. Each booking pays you ${Math.round((1 - OWNER_CUT) * 100)}% of the price.</p>` : `<p class="muted small">After the wedding, list what you bought in one tap: about ${money(resaleItems().reduce((t, r) => t + r.price * (1 - OWNER_CUT) * (r.unit === 'day' ? 8 : 1), 0))} back.</p><button class="ghost" data-resale>List what I bought</button>`}
       </div>
       <div class="card stack">
         <div class="row"><span>Inspiration</span><button class="link small" data-go="inspo">Board</button></div>
         ${styleStrip()}
-        ${state.imported || state.board ? `<div class="lines">${currentLooks().slice(0, 4).map((l) => { const m = region().m; const pro = l.parts.reduce((t, pt) => t + round((pt.pro[0] + pt.pro[1] * state.guests) * m, 25), 0); const diy = l.parts.reduce((t, pt) => t + round((pt.diy[0] + pt.diy[1] * state.guests) * m, 25), 0); return `<div class="line"><span>${l.title}<span class="muted small"> · DIY ${money(diy)}</span></span><b>${money(pro)}</b></div>`; }).join('')}</div>` : `<p class="muted small">No board connected. Import a Pinterest board and every look gets a price.</p><button class="ghost" ${pinsOn() ? 'data-go="inspo"' : 'data-import'}>Import a Pinterest board</button>`}
+        ${state.imported || state.board ? `<div class="lines">${currentLooks().slice(0, 4).map((l) => { const m = region().m; const pro = l.parts.reduce((t, pt) => t + round((pt.pro[0] + pt.pro[1] * state.guests) * m, 25), 0); const diy = l.parts.reduce((t, pt) => t + round((pt.diy[0] + pt.diy[1] * state.guests) * m, 25), 0); return `<div class="line"><span>${l.title}<span class="muted small"> · DIY ${money(diy)}</span></span><b>${money(pro)}</b></div>`; }).join('')}</div>` : `<p class="muted small">Import a Pinterest board and every look gets a price.</p><button class="ghost" ${pinsOn() ? 'data-go="inspo"' : 'data-import'}>Import a Pinterest board</button>`}
       </div>
     </div>
 
     <div class="stack">
-      <div class="row"><h2>This month</h2><button class="link small" data-go="schedule">Open the full schedule</button></div>
+      <div class="row"><h2>This month</h2><button class="link small" data-go="schedule">Full schedule</button></div>
       ${calendar(p)}
     </div>
   </div></section>`;
@@ -1426,7 +1424,7 @@ function picks() {
   const hiddenRows = hidden.map((h) => `<div class="line"><span>${h.name}<span class="muted small"> · ${h.why}</span></span><b>${money(h.amount)}</b></div>`).join('');
   return `
   <section class="section"><div class="wrap stack wide">
-    <div class="stack"><div class="eyebrow">My picks</div><h1>What you are using so far</h1><p class="lead">Everything you have added to your budget, plus the costs that usually surprise people.</p></div>
+    <div class="stack"><div class="eyebrow">My picks</div><h1>What you are using so far</h1><p class="lead">What you have chosen, plus the costs that surprise people.</p></div>
     ${flash()}
     <div class="two-col">
       <div class="main">
@@ -1712,7 +1710,7 @@ function schedule() {
   const view = state.view === 'list' ? 'list' : 'calendar';
   return `
   <section class="section"><div class="wrap stack wide">
-    <div class="stack"><div class="eyebrow">Schedule</div><h1>Your wedding timeline</h1><p class="lead">Pick your date and see what needs to happen before then, step by step.</p></div>
+    <div class="stack"><div class="eyebrow">Schedule</div><h1>Your wedding timeline</h1><p class="lead">Your date, and what needs to happen before it.</p></div>
     ${steps(p.tasks)}
     <div class="two-col">
       <div class="side card">
