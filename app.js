@@ -264,12 +264,13 @@ const PIN_COST = { // pro [fixed, perGuest], diy [fixed, perGuest], hours
   invites: { pro: [80, 3], diy: [30, 1], hours: 6 },
 };
 const TONES = ['#fde2e4', '#fbe7d6', '#f6e6ee', '#e9eef3', '#f4ecd8', '#e6efe9'];
-function pinToLook(pin, i) {
-  const t = (pin.title || '').toLowerCase();
+function pinToLook(pin, i, boardTitle) {
+  const t = `${pin.title || ''} ${pin.text || ''} ${pin.title || pin.text ? '' : boardTitle || ''}`.toLowerCase();
   let cats = PIN_WORDS.filter((w) => w.words.some((k) => t.includes(k))).map((w) => w.cat);
   cats = [...new Set(cats)].slice(0, 2);
   if (!cats.length) cats = ['decor'];
-  return { img: pin.img, url: pin.link, title: pin.title || 'Pinned look', tone: TONES[i % TONES.length], parts: cats.map((c) => ({ cat: c, pro: PIN_COST[c].pro, diy: PIN_COST[c].diy, hours: PIN_COST[c].hours })) };
+  const label = (pin.title || pin.text || '').trim().slice(0, 90);
+  return { img: pin.img, url: pin.link, title: label || `${boardTitle || 'Pinned'} look ${i + 1}`, tone: TONES[i % TONES.length], parts: cats.map((c) => ({ cat: c, pro: PIN_COST[c].pro, diy: PIN_COST[c].diy, hours: PIN_COST[c].hours })) };
 }
 async function importBoard(url) {
   const ctl = new AbortController();
@@ -282,7 +283,7 @@ async function importBoard(url) {
   try { j = await r.json(); } catch (e) { throw new Error(`The importer answered with something unexpected (status ${r.status}).`); }
   if (!r.ok || j.error) throw new Error(j.error || `Import failed (status ${r.status})`);
   if (!j.pins.length) throw new Error('No pins found on that board');
-  return { url, title: j.title || 'Your board', looks: j.pins.slice(0, 24).map(pinToLook) };
+  return { url, title: j.title || 'Your board', looks: j.pins.slice(0, 24).map((pin, i) => pinToLook(pin, i, j.title)) };
 }
 const currentLooks = () => (state.board && state.board.looks && state.board.looks.length ? state.board.looks : LOOKS);
 
@@ -1821,6 +1822,7 @@ function render() {
 app.addEventListener('click', (e) => {
   const el = e.target.closest('button, [data-pick]');
   if (!el) return;
+  if (el.tagName === 'BUTTON' && el.type === 'submit' && el.closest('form')) return; // let the form's submit handler run
   const d = el.dataset;
   const before = state.page;
   state.flash = '';

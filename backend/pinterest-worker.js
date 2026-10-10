@@ -52,8 +52,11 @@ export default {
       const it = m[1];
       const desc = clean((it.match(/<description>([\s\S]*?)<\/description>/) || [])[1]);
       const img = (desc.match(/src="([^"]+)"/) || [])[1] || '';
+      const alt = (desc.match(/alt="([^"]*)"/) || [])[1] || '';
+      const text = (alt + ' ' + desc.replace(/<[^>]+>/g, ' ')).replace(/\s+/g, ' ').trim();
       return {
         title: clean((it.match(/<title>([\s\S]*?)<\/title>/) || [])[1]),
+        text: text.slice(0, 200),
         link: clean((it.match(/<link>([\s\S]*?)<\/link>/) || [])[1]),
         img: img.replace('/236x/', '/564x/'),
       };
