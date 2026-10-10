@@ -271,7 +271,7 @@ function pinToLook(pin, i) {
   return { img: pin.img, url: pin.link, title: pin.title || 'Pinned look', tone: TONES[i % TONES.length], parts: cats.map((c) => ({ cat: c, pro: PIN_COST[c].pro, diy: PIN_COST[c].diy, hours: PIN_COST[c].hours })) };
 }
 async function importBoard(url) {
-  const r = await fetch(`${CFG.PINTEREST_PROXY.replace(/\/$/, '')}/?board=${encodeURIComponent(url)}`);
+  const r = await fetch(`${CFG.PINTEREST_PROXY.replace(/\/$/, '')}?board=${encodeURIComponent(url)}`);
   const j = await r.json();
   if (!r.ok || j.error) throw new Error(j.error || 'Import failed');
   if (!j.pins.length) throw new Error('No pins found on that board');

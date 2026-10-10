@@ -21,10 +21,10 @@ What it gives you: paste any public board link on the Inspiration page and the r
 
 1. Go to https://dash.cloudflare.com, sign up. Left sidebar, **Workers & Pages**, **Create**, **Create Worker**. Name it `wedly-pins`, click **Deploy**.
 2. Click **Edit code**. Delete everything in the editor, paste in `backend/pinterest-worker.js`, click **Deploy**.
-3. Copy the worker URL. It looks like `https://wedly-pins.yourname.workers.dev`.
+3. Copy the worker URL and add `/pins` to the end, like `https://wedly-pins.yourname.workers.dev/pins`.
 4. Put it in `config.js` as `PINTEREST_PROXY`. Push.
 
-Test it in the browser first: `https://wedly-pins.yourname.workers.dev/?board=https://www.pinterest.com/pinterest/official-news/` should show JSON with pins.
+Test it in the browser first: `https://wedly-pins.yourname.workers.dev/pins?board=https://www.pinterest.com/pinterest/official-news/` should show JSON with pins.
 
 ## 3. Deposits (Stripe test mode, free)
 

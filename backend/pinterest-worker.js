@@ -1,7 +1,8 @@
 // Wedly Pinterest importer. Paste this into a Cloudflare Worker (Workers & Pages > Create > Worker).
 // Pinterest publishes an RSS feed for every public board, but browsers are not allowed to read it
 // directly. This worker fetches the feed and returns the pins as JSON that the site can use.
-// Call it as: https://<your-worker>.workers.dev/?board=https://www.pinterest.com/user/board-name/
+// Call it as: https://<your-worker>.workers.dev/pins?board=https://www.pinterest.com/user/board-name/
+// (any path works; /pins is used so a static index.html can never shadow it)
 
 export default {
   async fetch(request) {
@@ -15,7 +16,7 @@ export default {
     const reply = (obj, status = 200) => new Response(JSON.stringify(obj), { status, headers: cors });
 
     const board = new URL(request.url).searchParams.get('board');
-    if (!board) return reply({ error: 'Add ?board=<pinterest board url>' }, 400);
+    if (!board) return reply({ ok: true, usage: 'GET /pins?board=<public pinterest board url>' });
     let b;
     try { b = new URL(board); } catch (e) { return reply({ error: 'That is not a URL' }, 400); }
     if (!/(^|\.)pinterest\.[a-z.]+$/.test(b.hostname) && !/(^|\.)pin\.it$/.test(b.hostname)) return reply({ error: 'Only Pinterest links work here' }, 400);
